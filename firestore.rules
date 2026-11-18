@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The browser may only create and read its OWN profile.
+    // Quizzes and results are reached only through the backend API (Admin SDK).
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.role in ['student', 'teacher']
+        && request.resource.data.keys().hasOnly(['name', 'email', 'role', 'createdAt']);
+      allow update, delete: if false;
+    }
+  }
+}
